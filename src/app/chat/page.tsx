@@ -27,8 +27,8 @@ function ChatPageInner() {
 
 export default function ChatPage() {
   return (
-    <main className="mx-auto w-full max-w-7xl px-6 py-8">
-      <BackToHomeButton className="mb-5" />
+    <main className="mx-auto w-full min-w-0 max-w-7xl px-4 py-4 sm:px-6 sm:py-8">
+      <BackToHomeButton className="mb-3 sm:mb-5" />
       <Suspense fallback={<p className="text-sm text-[#6a4a50]">Loading chat…</p>}>
         <ChatPageInner />
       </Suspense>

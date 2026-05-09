@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Camera,
@@ -19,6 +19,7 @@ import { CustomSelect } from "@/components/custom-select";
 import { ChatTypingIndicator } from "@/components/chat/chat-typing-indicator";
 import { MarkdownMessage } from "@/components/chat/markdown-message";
 import { analysisRecordToChatMessages, type AnalysisRecord } from "@/lib/analysis-format";
+import { pickThreeRandomFromPool } from "@/lib/chat-suggestion-prompts";
 import { getBrowserSupabase } from "@/lib/supabase";
 
 type Message = {
@@ -127,13 +128,30 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
   const bottomRef = useRef<HTMLDivElement>(null);
   const prevConversationUrlRef = useRef<string | null>(null);
   const [composerPreviewUrl, setComposerPreviewUrl] = useState<string | null>(null);
-
-  const suggestedQuestions = useMemo(
-    () => ["How can I fade dark spots safely?", "What is a simple acne routine?", "How do I fix dry flaky skin?"],
-    [],
-  );
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>(() => pickThreeRandomFromPool());
 
   const chatStarted = messages.length > 0;
+
+  const refreshSuggestions = useCallback(async () => {
+    try {
+      const res = await fetch("/api/chat-suggestions");
+      const json = (await res.json()) as { questions?: string[] };
+      if (Array.isArray(json.questions) && json.questions.length === 3) {
+        setSuggestedQuestions(json.questions);
+      } else {
+        setSuggestedQuestions(pickThreeRandomFromPool());
+      }
+    } catch {
+      setSuggestedQuestions(pickThreeRandomFromPool());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (chatStarted) return;
+    void refreshSuggestions();
+    const id = window.setInterval(() => void refreshSuggestions(), 90_000);
+    return () => window.clearInterval(id);
+  }, [chatStarted, refreshSuggestions]);
 
   const refreshHistory = useCallback(async () => {
     setHistoryItems(await fetchHistoryEntries());
@@ -482,19 +500,19 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
   };
 
   return (
-    <div className="relative flex w-full flex-col" style={{ minHeight: "min(78vh, calc(100dvh - 9rem))", maxHeight: "calc(100dvh - 9rem)" }}>
-      <header className="flex shrink-0 items-center justify-between gap-4 pb-3">
-        <BrandLogo />
-        <div className="flex items-center gap-2">
+    <div className="relative flex min-h-0 w-full min-w-0 flex-col [min-height:min(70vh,calc(100dvh-6rem))] max-h-[calc(100dvh-5rem)] sm:max-h-[calc(100dvh-9rem)]">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 gap-y-3 pb-3 sm:flex-nowrap sm:gap-4">
+        <BrandLogo className="min-w-0 shrink-0" />
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => startNewChat()}
-            className="group rounded-full border border-white/70 bg-white/80 px-3 py-2 text-sm font-medium text-[#6f3f45] transition duration-200 ease-out hover:scale-[1.02] hover:border-[#e8b8c8] hover:bg-white hover:shadow-md active:scale-95"
+            className="group rounded-full border border-white/70 bg-white/80 px-2.5 py-2 text-sm font-medium text-[#6f3f45] transition duration-200 ease-out hover:scale-[1.02] hover:border-[#e8b8c8] hover:bg-white hover:shadow-md active:scale-95 sm:px-3"
             title="Start a fresh conversation"
           >
             <span className="inline-flex items-center gap-1.5">
-              <MessageSquarePlus size={17} className="transition duration-200 group-hover:scale-110" />
-              New chat
+              <MessageSquarePlus size={17} className="shrink-0 transition duration-200 group-hover:scale-110" />
+              <span className="hidden sm:inline">New chat</span>
             </span>
           </button>
           <button
@@ -508,31 +526,34 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
       </header>
 
       {!chatStarted && (
-        <div className="mx-auto mb-4 max-w-3xl shrink-0 text-center">
-          <h1 className="section-title text-4xl text-[#5d3439] md:text-5xl">
+        <div className="mx-auto mb-3 w-full max-w-3xl shrink-0 px-1 text-center sm:mb-4 sm:px-0">
+          <h1 className="section-title px-1 text-3xl leading-tight text-[#5d3439] sm:text-4xl md:text-5xl">
             {welcomeFirstName ? `Hi ${welcomeFirstName}, welcome back` : "Hi, welcome back"}
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-[#6c4b51]">
+          <p className="mx-auto mt-3 max-w-xl px-1 text-sm leading-relaxed text-[#6c4b51] sm:text-base">
             Ask anything about your skin routine, concerns, and next steps. Tap Snap skin to add a photo for analysis.
           </p>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {suggestedQuestions.map((question) => (
+          <div className="relative mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            {suggestedQuestions.map((question, i) => (
               <button
                 type="button"
-                key={question}
+                key={`${question}-${i}`}
                 onClick={() => setInput(question)}
-                className="rounded-3xl border border-white/70 bg-white/75 p-4 text-left text-[#5f3e44] shadow-md transition duration-300 ease-out hover:-translate-y-2 hover:scale-[1.02] hover:border-[#e8b0c4] hover:bg-white/90 hover:shadow-lg active:scale-[0.99]"
+                className="rounded-2xl border border-white/70 bg-white/75 p-3 text-left text-sm text-[#5f3e44] shadow-md transition duration-300 ease-out hover:-translate-y-1 hover:border-[#e8b0c4] hover:bg-white/90 hover:shadow-lg active:scale-[0.99] sm:rounded-3xl sm:p-4 sm:text-[15px]"
               >
                 {question}
               </button>
             ))}
           </div>
+          <p className="mt-3 text-xs text-[#8a6f73] sm:text-sm">New AI suggestions rotate every ~90 seconds — tap one or type your own.</p>
         </div>
       )}
 
-      <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/70 bg-white/62 px-3 py-3">
+      <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/70 bg-white/62 px-2 py-3 sm:px-3">
         {!chatStarted && (
-          <p className="text-sm text-[#7f5b62]">Tip: ask a question or upload an image to begin analysis.</p>
+          <div className="mb-3 rounded-xl border border-[#e8c4d0]/50 bg-white/50 px-3 py-2.5 text-left text-xs leading-snug text-[#7f5b62] sm:text-sm">
+            <span className="font-medium text-[#6f3f45]">Tip:</span> ask a question or upload an image to begin analysis.
+          </div>
         )}
         {messages.map((message, index) => (
           <article
@@ -570,20 +591,20 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
         <div ref={bottomRef} />
       </div>
 
-      <div className="mt-3 flex shrink-0 items-end gap-3">
+      <div className="mt-2 flex min-w-0 shrink-0 flex-col gap-2 sm:mt-3 sm:flex-row sm:items-end sm:gap-3">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
-          className="group/toggle mb-[5px] flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/70 bg-white/90 text-[#6f3f45] shadow-md transition duration-300 ease-out hover:scale-105 hover:border-[#e8c4d0] hover:bg-white hover:shadow-lg active:scale-95"
+          className="group/toggle mb-0 flex h-11 w-11 shrink-0 items-center justify-center self-start rounded-full border border-white/70 bg-white/90 text-[#6f3f45] shadow-md transition duration-300 ease-out hover:scale-105 hover:border-[#e8c4d0] hover:bg-white hover:shadow-lg active:scale-95 sm:mb-[5px]"
           title="Conversation history"
         >
           <HistoryIcon className="transition duration-300 ease-out group-hover/toggle:text-[#5d343a]" size={18} />
         </button>
 
-        <div className="flex min-w-0 flex-1 justify-end">
+        <div className="flex min-w-0 w-full flex-1 sm:justify-end">
           <form
             onSubmit={send}
-            className="flex w-full max-w-[85%] min-w-[10.5rem] flex-col gap-2 rounded-2xl border border-white/70 bg-white/88 p-2 transition duration-300 ease-out hover:border-[#e8c4d0] hover:bg-white/95 hover:shadow-md md:max-w-[50%]"
+            className="flex w-full min-w-0 max-w-full flex-col gap-2 rounded-2xl border border-white/70 bg-white/88 p-2 transition duration-300 ease-out hover:border-[#e8c4d0] hover:bg-white/95 hover:shadow-md sm:max-w-[min(100%,28rem)] md:max-w-[50%]"
           >
             {selectedFile && composerPreviewUrl ? (
               <div className="flex items-center gap-2 px-0.5 pt-0.5">
@@ -624,16 +645,16 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
               <button
                 type="button"
                 onClick={() => void openSnapPicker()}
-                className="group/snap inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#efc6d5] bg-[#fff0f5] px-3 py-2 text-sm font-medium text-[#6f3f45] transition duration-200 ease-out hover:scale-[1.02] hover:border-[#e8a8be] hover:bg-[#ffe4ef] hover:shadow-md active:scale-95"
+                className="group/snap inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-xl border border-[#efc6d5] bg-[#fff0f5] px-3 py-2 text-sm font-medium text-[#6f3f45] transition duration-200 ease-out hover:scale-[1.02] hover:border-[#e8a8be] hover:bg-[#ffe4ef] hover:shadow-md active:scale-95"
                 title="Snap or upload a skin photo"
               >
-                <Camera size={17} className="transition duration-200 group-hover/snap:scale-110 group-hover/snap:-rotate-6" aria-hidden />
+                <Camera size={17} className="shrink-0 transition duration-200 group-hover/snap:scale-110 group-hover/snap:-rotate-6" aria-hidden />
                 <span>Snap skin</span>
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="group/send ml-auto shrink-0 rounded-xl bg-[#d88ca9] px-4 py-2 text-sm font-semibold text-white shadow-md transition duration-200 ease-out hover:scale-[1.02] hover:bg-[#c97a9a] hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                className="group/send ml-auto min-h-[44px] shrink-0 rounded-xl bg-[#d88ca9] px-4 py-2 text-sm font-semibold text-white shadow-md transition duration-200 ease-out hover:scale-[1.02] hover:bg-[#c97a9a] hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
               >
                 <span className="inline-flex items-center gap-1">
                   Send{" "}
