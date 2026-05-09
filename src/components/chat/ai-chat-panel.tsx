@@ -129,6 +129,8 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
   const prevConversationUrlRef = useRef<string | null>(null);
   const [composerPreviewUrl, setComposerPreviewUrl] = useState<string | null>(null);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>(() => pickThreeRandomFromPool());
+  /** Sync session so Snap skin can open the file picker synchronously (required on iOS Safari). */
+  const [hasSession, setHasSession] = useState(false);
 
   const chatStarted = messages.length > 0;
 
@@ -149,9 +151,18 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
   useEffect(() => {
     if (chatStarted) return;
     void refreshSuggestions();
-    const id = window.setInterval(() => void refreshSuggestions(), 90_000);
-    return () => window.clearInterval(id);
   }, [chatStarted, refreshSuggestions]);
+
+  useEffect(() => {
+    const supabase = getBrowserSupabase();
+    void supabase.auth.getSession().then(({ data: { session } }) => setHasSession(!!session));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setHasSession(!!session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const refreshHistory = useCallback(async () => {
     setHistoryItems(await fetchHistoryEntries());
@@ -449,13 +460,10 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
     setSelectedFile(event.target.files?.[0] ?? null);
   };
 
-  const openSnapPicker = async () => {
-    const supabase = getBrowserSupabase();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      setError(null);
+  /** Must stay synchronous after tap — iOS Safari blocks file input if opened after `await`. */
+  const openSnapPicker = () => {
+    setError(null);
+    if (!hasSession) {
       onRequireLogin?.();
       return;
     }
@@ -545,16 +553,18 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
               </button>
             ))}
           </div>
-          <p className="mt-3 text-xs text-[#8a6f73] sm:text-sm">New AI suggestions rotate every ~90 seconds — tap one or type your own.</p>
+          <p className="mt-3 text-xs text-[#8a6f73] sm:text-sm">Fresh AI suggestions load when you open or reload this page.</p>
         </div>
       )}
 
-      <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/70 bg-white/62 px-2 py-3 sm:px-3">
-        {!chatStarted && (
-          <div className="mb-3 rounded-xl border border-[#e8c4d0]/50 bg-white/50 px-3 py-2.5 text-left text-xs leading-snug text-[#7f5b62] sm:text-sm">
-            <span className="font-medium text-[#6f3f45]">Tip:</span> ask a question or upload an image to begin analysis.
-          </div>
-        )}
+      {!chatStarted && (
+        <div className="mb-2 w-full shrink-0 rounded-xl border border-[#e8c4d0]/60 bg-white/70 px-4 py-3 text-left text-sm leading-relaxed text-[#7f5b62] shadow-sm sm:py-3.5 sm:text-[15px]">
+          <span className="font-semibold text-[#6f3f45]">Tip:</span>{" "}
+          ask a question or upload an image to begin analysis.
+        </div>
+      )}
+
+      <div className="scrollbar-hide min-h-0 min-h-[8rem] flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-white/70 bg-white/62 px-2 py-3 sm:min-h-0 sm:px-3">
         {messages.map((message, index) => (
           <article
             key={`${message.role}-${index}`}
@@ -591,7 +601,7 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
         <div ref={bottomRef} />
       </div>
 
-      <div className="mt-2 flex min-w-0 shrink-0 flex-col gap-2 sm:mt-3 sm:flex-row sm:items-end sm:gap-3">
+      <div className="relative z-10 mt-2 flex min-w-0 shrink-0 touch-manipulation flex-col gap-2 sm:mt-3 sm:flex-row sm:items-end sm:gap-3">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
@@ -644,8 +654,8 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => void openSnapPicker()}
-                className="group/snap inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-xl border border-[#efc6d5] bg-[#fff0f5] px-3 py-2 text-sm font-medium text-[#6f3f45] transition duration-200 ease-out hover:scale-[1.02] hover:border-[#e8a8be] hover:bg-[#ffe4ef] hover:shadow-md active:scale-95"
+                onClick={openSnapPicker}
+                className="group/snap inline-flex min-h-[44px] shrink-0 cursor-pointer items-center gap-2 rounded-xl border border-[#efc6d5] bg-[#fff0f5] px-3 py-2 text-sm font-medium text-[#6f3f45] transition duration-200 ease-out hover:scale-[1.02] hover:border-[#e8a8be] hover:bg-[#ffe4ef] hover:shadow-md active:scale-95"
                 title="Snap or upload a skin photo"
               >
                 <Camera size={17} className="shrink-0 transition duration-200 group-hover/snap:scale-110 group-hover/snap:-rotate-6" aria-hidden />
@@ -662,7 +672,7 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
                 </span>
               </button>
             </div>
-            <input ref={uploadRef} type="file" accept="image/*" className="hidden" onChange={onPickFile} />
+            <input ref={uploadRef} type="file" accept="image/*" className="sr-only" aria-hidden tabIndex={-1} onChange={onPickFile} />
           </form>
         </div>
       </div>
