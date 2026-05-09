@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fffaf6;
+  --foreground: #362a2d;
+  --pink-100: #ffdce8;
+  --pink-200: #fcbfd5;
+  --cream-100: #fff5ea;
+  --brown-300: #9b5d62;
+  --brown-500: #6f3f45;
+  --glass: rgba(255, 255, 255, 0.48);
+  --glass-border: rgba(255, 255, 255, 0.42);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-manrope);
+  --font-serif: var(--font-playfair);
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(252, 191, 213, 0.55), transparent 36%),
+    radial-gradient(circle at 90% 12%, rgba(155, 93, 98, 0.2), transparent 30%),
+    linear-gradient(180deg, #fffaf6 0%, #ffeef5 60%, #fff5ea 100%);
+  color: var(--foreground);
+  font-family: var(--font-manrope), sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 45px rgba(111, 63, 69, 0.14);
+}
+
+/* Shared hover motion for cards / glass surfaces */
+.glass-panel-hover {
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    background-color 0.35s ease;
+}
+.glass-panel-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 28px 55px rgba(111, 63, 69, 0.2);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+
+.section-title {
+  font-family: var(--font-playfair), serif;
+  letter-spacing: 0.02em;
+}
+
+/* Hide scrollbars but keep overflow scroll (e.g. chat transcript) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  animation: chat-dot-bounce 1.05s ease-in-out infinite;
+}
+.chat-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.chat-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes chat-dot-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
