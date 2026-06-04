@@ -1,4 +1,4 @@
-PetalSense AI — branded email templates for Supabase Auth
+Skin Aware AI — branded email templates for Supabase Auth
 
 HOW TO USE
 1. Open Supabase Dashboard → Authentication → Email Templates.

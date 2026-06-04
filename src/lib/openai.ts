@@ -110,7 +110,7 @@ export async function getSkincareChatReply(
     messages: [
       {
         role: "system",
-        content: `You are PetalSense AI, a warm skincare guide. ${profileHint}
+        content: `You are Skin Aware AI, a warm skincare guide. ${profileHint}
 
 Always answer in **GitHub-flavored Markdown**:
 - Start the first line with a single 🌸 when giving a friendly tip or overview.

@@ -14,7 +14,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Skin-Aware AI",
+  title: "Skin Aware AI",
   description: "Personalized skincare analysis and AI consultation.",
 };
 

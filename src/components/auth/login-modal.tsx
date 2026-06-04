@@ -68,7 +68,7 @@ export function LoginModal({ open, onClose, onLoggedIn }: LoginModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2f1f23]/40 px-4 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-3xl border border-[#f0ccd8] bg-gradient-to-b from-[#fff4f8] to-[#ffe7ef] p-6 shadow-xl transition duration-300 hover:shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="section-title text-2xl text-[#6f3f45]">Welcome to Skin-Aware AI</h3>
+          <h3 className="section-title text-2xl text-[#6f3f45]">Welcome to Skin Aware AI</h3>
           <button
             type="button"
             onClick={onClose}

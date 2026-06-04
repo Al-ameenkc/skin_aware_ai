@@ -10,7 +10,7 @@ export function SiteFooter() {
             <Flower2 size={20} className="transition duration-300 group-hover:scale-110" aria-hidden />
           </span>
           <div className="min-w-0 text-center md:text-left">
-            <p className="section-title text-lg text-[#5d3339]">PetalSense AI</p>
+            <p className="section-title text-lg text-[#5d3339]">Skin Aware AI</p>
             <p className="text-xs text-[#7a575d] sm:text-sm">Beautiful skin guidance, thoughtfully designed.</p>
           </div>
         </div>
@@ -36,8 +36,8 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="border-t border-white/30 bg-white/20 px-4 py-4 text-center text-[11px] text-[#7a5b62] sm:text-xs">
-        <p>PetalSense AI is a supportive tool, not a substitute for professional medical advice.</p>
-        <p className="mt-1">© {new Date().getFullYear()} PetalSense AI. All rights reserved.</p>
+        <p>Skin Aware AI is an intelligent supportive tool.</p>
+        <p className="mt-1">© {new Date().getFullYear()} Skin Aware AI. All rights reserved.</p>
       </div>
     </footer>
   );

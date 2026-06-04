@@ -17,7 +17,7 @@ export function HeroSection() {
           Beautiful, personalized skincare intelligence
         </p>
         <h1 className="section-title max-w-3xl text-2xl leading-[1.15] text-[#5e343b] sm:text-4xl sm:leading-tight md:text-5xl">
-          Skin-Aware AI that feels modern, elegant, and uniquely yours.
+          Skin Aware AI that feels modern, elegant, and uniquely yours.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#6a4a50] sm:mt-5 sm:text-lg">
           Start with a quick skin check, explore your history, and chat with your personal skincare assistant for

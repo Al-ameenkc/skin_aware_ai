@@ -13,7 +13,7 @@ export function BrandLogo({ compact = false, className = "" }: BrandLogoProps) {
       </div>
       <div className="min-w-0">
         <p className={`section-title leading-tight text-[#5d3339] ${compact ? "text-base sm:text-lg" : "text-lg sm:text-xl"}`}>
-          PetalSense AI
+          Skin Aware AI
         </p>
         {!compact && <p className="hidden text-xs text-[#7a575d] sm:block">Beautiful skin guidance</p>}
       </div>

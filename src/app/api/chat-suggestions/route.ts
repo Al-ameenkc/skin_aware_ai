@@ -21,7 +21,7 @@ export async function GET() {
       messages: [
         {
           role: "system",
-          content: `You help PetalSense AI. Reply with ONLY valid JSON: {"questions":["...","...","..."]}.
+          content: `You help Skin Aware AI. Reply with ONLY valid JSON: {"questions":["...","...","..."]}.
 Exactly 3 strings. Each is a short natural question (under 14 words) about skincare someone might ask a chat assistant.
 Topics should vary: routines, SPF, acne, dryness, sensitivity, ingredients, habits. No numbering or quotes inside strings.`,
         },

@@ -647,7 +647,7 @@ export function AiChatPanel({ onRequireLogin, initialConversationId = null }: Ai
               <input
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="Ask PetalSense AI anything…"
+                placeholder="Ask Skin Aware AI anything…"
                 className="w-full rounded-xl border border-white/60 bg-white px-3 py-2.5 text-sm outline-none transition duration-200 hover:border-[#e8b8c8] focus:ring-2 focus:ring-[#d88ca9]"
               />
             )}
