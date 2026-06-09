@@ -39,3 +39,28 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Documentation, thesis, and research materials (not part of the web app)
+/docs/
+/documentation/
+/screenshots/
+/docs-screenshots/
+*.docx
+*.doc
+*.pdf
+*_extract.txt
+_ekene_extract.txt
+EKENE1.docx
+
+# Documentation images (keep public/ web assets tracked)
+/docs/**/*.png
+/docs/**/*.jpg
+/docs/**/*.jpeg
+/docs/**/*.gif
+/docs/**/*.webp
+/screenshots/**/*.png
+/screenshots/**/*.jpg
+/screenshots/**/*.jpeg
+/screenshots/**/*.gif
+/screenshots/**/*.webp
+/docs-screenshots/**
