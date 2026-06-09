@@ -50,6 +50,7 @@ next-env.d.ts
 *.pdf
 *_extract.txt
 _ekene_extract.txt
+EKENE.docx
 EKENE1.docx
 
 # Documentation images (keep public/ web assets tracked)
